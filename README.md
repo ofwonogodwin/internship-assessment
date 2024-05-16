@@ -7,6 +7,7 @@ This assessment consists of 2 parts:
 ## Getting started
 - Fork this repository to create your own copy. ([More info about forking a repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo))
 - Clone your repository to access it locally: `git clone https://github.com/<your-username>/internship-assessment.git`. (Replace `<your-username>` with your Github username.)
+- Change directory into the `internship-assessment` folder after cloning thr repository.
 - Create a python virtual environment: `python -m venv venv`
 - Activate the virtual environment: 
   - Linux/Mac: `source venv/bin/activate`
@@ -26,19 +27,19 @@ Your goal is to implement the 2 functions `collatz` and `distinct_numbers` to ma
 You can keep running the `pytest` command to see which tests are still failing and fix your code accordingly.
 
 ## Part 2: Write a simple python translation script
-Write a simple python script in a file `translate.py` that translates text to-and-from English to 5 local Ugandan languages.
+Write a simple python script in a file `translate.py` that translates text to-and-from English to 5 local Ugandan languages and viseversa.
 
 Your script should do the following:
 - Ask the user to choose a source language (English, Luganda, Runyankole, Ateso, Lugbara or Acholi).
-- If the source language is English, ask the user to choose a target language, otherwise set English as the target language.
+- Ask the user to choose a target language (English, Luganda, Runyankole, Ateso, Lugbara or Acholi). A target language can't be the same as the source language.
 - Ask the user for text to translate (should be in the source language chosen).
 - Translate the input text into the target language.
 
 A sample interaction is as follows:
 ```
-(your program): Please choose the source language:
+(your program): Please choose the source language: (one of English, Luganda, Runyankole, Ateso, Lugbara or Acholi)
 (the user): English
-(your program): Please choose the target language: (one of Luganda, Runyankole, Ateso, Lugbara or Acholi):
+(your program): Please choose the target language: (one of English, Luganda, Runyankole, Ateso, Lugbara or Acholi):
 (the user): Luganda
 (your program): Enter the text to translate:
 (the user): How are you?
@@ -47,4 +48,5 @@ A sample interaction is as follows:
 
 This will require you to make use of Sunbird's API. You can find a [tutorial](https://github.com/SunbirdAI/sunbird-ai-api/blob/main/tutorial.md) here. 
 
-To use the API, you'll need an access token which will be sent in the email inviting you to this assessment.
+To use the API, you'll need an **access token** which will be sent in the email inviting you to this assessment. Please use this **access token** for this assignment and 
+don't try to signup to create an account as indicated in the tutorial above.
