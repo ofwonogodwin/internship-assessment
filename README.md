@@ -50,7 +50,7 @@ A sample interaction is as follows:
 Write a simple python script in a file `transcribe.py` that transcribes a given audio file to text in a given language text(English and any other 5 local Ugandan languages).
 
 Your script should do the following:
-- Ask the user to provide path to the audio file (/path/to/audio_file). Audio length less than 5 minutes
+- Ask the user to provide path to the audio file (/path/to/audio_file). Audio length less than 5 minutes meaning an audio with length greater than 5 minutes shouldn't be permitted.
 - Ask the user to choose a target language (English, Luganda, Runyankole, Ateso, Lugbara or Acholi) in which the audio is.
 - Transcribe the audio file into text into the target language.
 
