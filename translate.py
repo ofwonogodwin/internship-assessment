@@ -65,8 +65,7 @@ def main():
 
     print("\nTranslating...\n")
     translated = translate(text, languages[source_language], languages[target_language])
-    print(f"Translated Ur text in {target_language}: {translated}")
-    # print(translated)
+    print(f"Translation in {target_language}:\n {translated}")
 
 if __name__ == "__main__":
     main()
