@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # Load token from .env
 load_dotenv()
-TOKEN = os.getenv("AUTH_TOKEN")
+access_token = os.getenv("AUTH_TOKEN")
 
 # Transcription endpoint (Sunbird ASR)
 url = "https://api.sunbird.ai/tasks/speech_recognition"
@@ -36,7 +36,7 @@ def transcribe(audio_path, language_code):
     """Send the audio file to the Sunbird API for transcription"""
     headers = {
         "accept": "application/json",
-        "Authorization": f"Bearer {TOKEN}",
+        "Authorization": f"Bearer {access_token}",
     }
 
     files = {
@@ -56,7 +56,8 @@ def transcribe(audio_path, language_code):
         return f"Error {response.status_code}: {response.text}"
 
 def main():
-    print("Please provide path to the audio file (Audio length less than 5 minutes):")
+    print("Note!! (Audio length should be less than 5 minutes)\nPlease provide path to the audio file in Format below:\n >>(Linux)/Users/yourname/Desktop/greeting.wav:")
+    # print(">>(Windows)C:\Users\YourName\Desktop\greeting.wav")
     audio_path = input().strip()
 
     if not os.path.exists(audio_path):
