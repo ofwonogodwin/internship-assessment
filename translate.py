@@ -1,49 +1,72 @@
+import os
 import requests
+from dotenv import load_dotenv
 
-def get_translation(text, source_lang, target_lang):
-    url = "https://api.sunbird.ai/v1/translate"  # Replace with actual endpoint
+# Loading the token from .env file
+load_dotenv()
+access_token = os.getenv("AUTH_TOKEN")
+
+# translation endpoint
+url = "https://api.sunbird.ai/tasks/nllb_translate"
+
+# languages supported and  there codes
+languages = {
+    "English": "eng",
+    "Luganda": "lug",
+    "Runyankole": "nyn",
+    "Ateso": "teo",
+    "Lugbara": "lgg",
+    "Acholi": "ach"
+}
+def translate(text, source_code, target_code):
     headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
-        # "Authorization": "Bearer YOUR_API_KEY",  # Uncomment and insert key if required
     }
     data = {
-        "source_language": source_lang.lower(),
-        "target_language": target_lang.lower(),
-        "text": text
+        "source_language": source_code,
+        "target_language": target_code,
+        "text": text,
     }
 
-    response = requests.post(url, json=data, headers=headers)
+    response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-        return response.json().get("translated_text", "Translation not found.")
+        json_data = response.json()
+        return json_data.get("output", {}).get("translated_text", "No translation returned.")
     else:
-        return f"Error: {response.status_code} - {response.text}"
+        return f"Error {response.status_code}: {response.text}"
+
 
 def main():
-    languages = ["English", "Luganda", "Runyankole", "Ateso", "Lugbara", "Acholi"]
+    print("Please choose the source language from List Below:")
+    for language in languages:
+        print(f">> {language}")
+    source_language = input("Source language: ").strip().title()
 
-    print("Please choose the source language: (one of English, Luganda, Runyankole, Ateso, Lugbara or Acholi)")
-    source = input().strip().title()
-    if source not in languages:
+    if source_language not in languages:
         print("Invalid source language.")
         return
 
-    print("Please choose the target language: (one of English, Luganda, Runyankole, Ateso, Lugbara or Acholi)")
-    target = input().strip().title()
-    if target not in languages:
+    print("\nPlease choose the target language from list below:")
+    for language in languages:
+        print(f">> {language}")
+    target_language = input("Target language: ").strip().title()
+
+    if target_language not in languages:
         print("Invalid target language.")
         return
 
-    if source == target:
-        print("Source and target languages cannot be the same.")
+    if source_language == target_language:
+        print("Sorry, The Source and target language cant be the same.")
         return
 
-    print("Enter the text to translate:")
-    text = input().strip()
+    text = input("\nType the text you want to translate :")
 
-    print("Translating...")
-    translation = get_translation(text, source, target)
-    print("Translated text:")
-    print(translation)
+    print("\nTranslating...\n")
+    translated = translate(text, languages[source_language], languages[target_language])
+    print(f"Translated Ur text in {target_language}: {translated}")
+    # print(translated)
 
 if __name__ == "__main__":
     main()

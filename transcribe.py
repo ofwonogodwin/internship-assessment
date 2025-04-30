@@ -1,70 +1,84 @@
 import os
 import requests
-from pydub import AudioSegment
+import wave
+from dotenv import load_dotenv
 
-def get_audio_duration(filepath):
+# Load token from .env
+load_dotenv()
+TOKEN = os.getenv("AUTH_TOKEN")
+
+# Transcription endpoint (Sunbird ASR)
+url = "https://api.sunbird.ai/tasks/speech_recognition"
+
+# Supported languages
+languages = {
+    "English": "eng",
+    "Luganda": "lug",
+    "Runyankole": "nyn",
+    "Ateso": "teo",
+    "Lugbara": "lgg",
+    "Acholi": "ach"
+}
+
+def check_audio_duration(path):
+    """Checks if the audio is under 5 minutes"""
     try:
-        audio = AudioSegment.from_file(filepath)
-        duration_seconds = len(audio) / 1000
-        return duration_seconds
+        with wave.open(path, 'rb') as audio:
+            frames = audio.getnframes()
+            rate = audio.getframerate()
+            duration = frames / float(rate)
+            return duration <= 300  # 300 seconds = 5 minutes
     except Exception as e:
         print(f"Error reading audio file: {e}")
-        return None
+        return False
 
-def transcribe_audio(filepath, language):
-    url = "https://api.sunbird.ai/v1/speech-to-text"  # Replace with actual Sunbird endpoint
+def transcribe(audio_path, language_code):
+    """Send the audio file to the Sunbird API for transcription"""
     headers = {
-        # "Authorization": "Bearer YOUR_API_KEY",  # Uncomment if API key required
-    }
-    files = {
-        'file': open(filepath, 'rb'),
-    }
-    data = {
-        'language': language.lower()
+        "accept": "application/json",
+        "Authorization": f"Bearer {TOKEN}",
     }
 
-    print("Sending audio to Sunbird AI for transcription...")
+    files = {
+        "audio": open(audio_path, "rb"),
+    }
+
+    data = {
+        "language": language_code
+    }
+
     response = requests.post(url, headers=headers, files=files, data=data)
 
     if response.status_code == 200:
         result = response.json()
-        return result.get("transcription", "No transcription found.")
+        return result.get("text", "No transcription returned.")
     else:
         return f"Error {response.status_code}: {response.text}"
 
 def main():
-    supported_languages = ["English", "Luganda", "Runyankole", "Ateso", "Lugbara", "Acholi"]
-
-    # Step 1: Get audio file path
     print("Please provide path to the audio file (Audio length less than 5 minutes):")
-    filepath = input().strip()
+    audio_path = input().strip()
 
-    if not os.path.exists(filepath):
-        print("Audio file not found.")
+    if not os.path.exists(audio_path):
+        print("File does not exist.")
         return
 
-    # Step 2: Check audio duration
-    duration = get_audio_duration(filepath)
-    if duration is None:
+    if not check_audio_duration(audio_path):
+        print("Audio must be less than 5 minutes.")
         return
 
-    if duration > 300:  # 5 minutes = 300 seconds
-        print("Audio file is longer than 5 minutes. Please provide a shorter file.")
+    print("Please choose the target language:")
+    for lang in languages:
+        print(f"- {lang}")
+    target = input("Target language: ").strip().title()
+
+    if target not in languages:
+        print("Invalid language selected.")
         return
 
-    # Step 3: Ask for language
-    print("Please choose the target language: (one of English, Luganda, Runyankole, Ateso, Lugbara or Acholi):")
-    language = input().strip().title()
-
-    if language not in supported_languages:
-        print("Invalid language choice.")
-        return
-
-    # Step 4: Transcribe
-    transcription = transcribe_audio(filepath, language)
-
-    # Step 5: Output
-    print(f"\nAudio transcription text in {language.lower()}:")
+    print("\nTranscribing...\n")
+    transcription = transcribe(audio_path, languages[target])
+    print(f"Audio transcription text in {target}:")
     print(transcription)
 
 if __name__ == "__main__":
