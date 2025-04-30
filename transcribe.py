@@ -1,14 +1,13 @@
 import os
 import requests
-import wave
 from dotenv import load_dotenv
 
-# Load token from .env
+# Load token
 load_dotenv()
-access_token = os.getenv("AUTH_TOKEN")
+access_token= os.getenv("AUTH_TOKEN")
 
-# Transcription endpoint (Sunbird ASR)
-url = "https://api.sunbird.ai/tasks/speech_recognition"
+# Sunbird API URL
+API_URL = "https://api.sunbird.ai/tasks/stt"
 
 # Supported languages
 languages = {
@@ -19,68 +18,91 @@ languages = {
     "Lugbara": "lgg",
     "Acholi": "ach"
 }
-
-def check_audio_duration(path):
-    """Checks if the audio is under 5 minutes"""
-    try:
-        with wave.open(path, 'rb') as audio:
-            frames = audio.getnframes()
-            rate = audio.getframerate()
-            duration = frames / float(rate)
-            return duration <= 300  # 300 seconds = 5 minutes
-    except Exception as e:
-        print(f"Error reading audio file: {e}")
-        return False
-
-def transcribe(audio_path, language_code):
-    """Send the audio file to the Sunbird API for transcription"""
+def transcribe(audio_path, lang_code):
     headers = {
         "accept": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
 
-    files = {
-        "audio": open(audio_path, "rb"),
-    }
+    mime_type = "audio/wav" if audio_path.endswith(".wav") else "audio/mpeg"
 
-    data = {
-        "language": language_code
-    }
+    with open(audio_path, "rb") as f:
+        files = {
+            "audio": (
+                os.path.basename(audio_path),
+                f,
+                mime_type,
+            ),
+        }
 
-    response = requests.post(url, headers=headers, files=files, data=data)
+        data = {
+            "language": lang_code,
+            "adapter": lang_code,
+            "whisper": True,
+        }
+
+        response = requests.post(API_URL, headers=headers, files=files, data=data)
+
+    # print("Raw response:", response.text)
 
     if response.status_code == 200:
-        result = response.json()
-        return result.get("text", "No transcription returned.")
+        return response.json().get("audio_transcription", "No transcription returned.")
+
+        # return response.json().get("output", {}).get("text", "No transcription returned.")
     else:
         return f"Error {response.status_code}: {response.text}"
 
-def main():
-    print("Note!! (Audio length should be less than 5 minutes)\nPlease provide path to the audio file in Format below:\n >>(Linux)/Users/yourname/Desktop/greeting.wav:")
-    # print(">>(Windows)C:\Users\YourName\Desktop\greeting.wav")
-    audio_path = input().strip()
 
+# def transcribe(audio_path, lang_code):
+#     headers = {
+#         "accept": "application/json",
+#         "Authorization": f"Bearer {access_token}",
+#     }
+
+#     mime_type = "audio/wav" if audio_path.endswith(".wav") else "audio/mpeg"
+
+#     files = {
+#         "audio": (
+#             os.path.basename(audio_path),
+#             open(audio_path, "rb"),
+#             mime_type,
+#         ),
+#     }
+
+#     data = {
+#         "language": lang_code,
+#         "adapter": lang_code,
+#         "whisper": True,
+#     }
+
+#     response = requests.post(API_URL, headers=headers, files=files, data=data)
+
+#     if response.status_code == 200:
+#         return response.json().get("output", {}).get("text", "No transcription returned.")
+#     else:
+#         return f"Error {response.status_code}: {response.text}"
+
+def main():
+    audio_path = input("Please provide path to the audio file: ").strip()
+# /home/godwin-ofwono/Desktop/python/sunbird_AI/internship-assessment/voices/..
+# /home/godwin-ofwono/Desktop/voices/how-are-you-doing-today-103598.mp3
+# /home/godwin-ofwono/Desktop/voices/yes-i-believe-you-176782.mp3
     if not os.path.exists(audio_path):
         print("File does not exist.")
-        return
-
-    if not check_audio_duration(audio_path):
-        print("Audio must be less than 5 minutes.")
         return
 
     print("Please choose the target language:")
     for lang in languages:
         print(f"- {lang}")
-    target = input("Target language: ").strip().title()
+    lang = input("Target language: ").strip().title()
 
-    if target not in languages:
-        print("Invalid language selected.")
+    if lang not in languages:
+        print("Invalid language.")
         return
 
     print("\nTranscribing...\n")
-    transcription = transcribe(audio_path, languages[target])
-    print(f"Audio transcription text in {target}:")
-    print(transcription)
+    result = transcribe(audio_path, languages[lang])
+    print(f"Audio transcription text in {lang.lower()}:\n{result}")
 
 if __name__ == "__main__":
     main()
